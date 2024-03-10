@@ -1,8 +1,12 @@
 const url = require('url');
 const yaml = require('js-yaml');
 const axios = require('axios'); // 假设用axios加载订阅内容
-const { decodeBase64 } = require('./parser'); // 假设存在对应的解析模块
-const { getCountryName, parseProxy } = require('./utils'); // 同样，假设有相应的实用功能
+const { decodeBase64 } = require('./parser/base64'); // 假设存在对应的解析模块
+const { getCountryName, parseProxy } = require('./utils/proxy'); // 同样，假设有相应的实用功能
+const fs = require('fs').promises;
+const { addAllNewProxies, prependRules, appendRules, prependRuleProvider, appendRuleProvider } = require('./utils/proxy'); // 假设这些函数已经实现
+const crypto = require('crypto');
+
 
 async function parseGroupTags(subURL, newProxies) {
     const parsedURL = new url.URL(subURL);
@@ -81,12 +85,6 @@ async function loadSubscription(subURL, refresh) {
     const response = await axios.get(subURL); // 示例请求
     return response.data; // 假设直接返回响应体作为数据
 }
-
-const fs = require('fs').promises;
-const yaml = require('js-yaml');
-const axios = require('axios');
-const { parseProxy } = require('./utils'); // 假设已经有了相应的解析代理的函数
-const { walkSubsForProxyList } = require('./yourPreviousFunctionImplementation'); // 引入之前的函数
 
 async function buildSub(clashType, query, templatePath) {
     let template = templatePath;
@@ -169,11 +167,6 @@ async function buildSub(clashType, query, templatePath) {
     return [temp, null];
 }
 
-
-const crypto = require('crypto');
-
-// 假设已经实现的一些辅助函数
-const { addAllNewProxies, prependRules, appendRules, prependRuleProvider, appendRuleProvider } = require('./utils');
 
 async function continueBuildSub(proxyList, query, temp) {
     // 重命名
@@ -259,12 +252,6 @@ async function continueBuildSub(proxyList, query, temp) {
 
     return temp;
 }
-
-
-const yaml = require('js-yaml');
-const fs = require('fs').promises;
-const { parseProxy, addAllNewProxies, prependRules, appendRules, prependRuleProvider, appendRuleProvider } = require('./utils'); // 假设这些函数已经实现
-const crypto = require('crypto');
 
 // 解析查询条件，转换为适用于JavaScript的格式
 function parseQuery(syntax) {
