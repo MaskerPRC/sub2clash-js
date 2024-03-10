@@ -32,12 +32,12 @@ function parseTrojan(proxy) {
 
     // 返回结果
     const result = {
-        Type: 'trojan',
-        Server: serverAndPort[0].trim(),
-        Port: port,
-        UDP: true,
-        Password: parts[0].trim(),
-        Sni: params.get('sni'),
+        type: 'trojan',
+        server: serverAndPort[0].trim(),
+        port: port,
+        udp: true,
+        password: parts[0].trim(),
+        dni: params.get('sni'),
     };
 
     // 如果有节点名称

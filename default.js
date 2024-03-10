@@ -31,7 +31,7 @@ function parseCountries(newProxies) {
     });
 }
 
-async function walkSubsForProxyList(sub, query) {
+async function walkSubsForProxyList(sub, query, proxyList) {
     try {
         for (let subURL of query.subs) {
             let data;
@@ -70,19 +70,11 @@ async function walkSubsForProxyList(sub, query) {
                 }
             }
 
-            if (subName) {
-                newProxies.forEach(proxy => {
-                    proxy.SubName = subName;
-                });
-            }
-
             // Further parsing and adjustments
             await parseGroupTags(subURL, newProxies);
             parseCountries(newProxies);
 
-            // Assuming proxyList is an array that new proxies should be added to
-            if (!Array.isArray(sub.Proxies)) sub.Proxies = [];
-            sub.Proxies.push(...newProxies);
+            proxyList.push(...newProxies);
         }
 
         return [true, null];
@@ -123,29 +115,23 @@ async function buildSub(clashType, query, templatePath) {
     let sub = {};
     let proxyList = [];
 
-    // Walking subscriptions for proxy list might require some adjustments
+    // 遍历订阅链接 获取 proxyList
     const [success, error] = await walkSubsForProxyList(sub, query, proxyList);
     if (!success) {
         return [null, error];
     }
 
-    // todo: 从这里继续
-    if (query.Proxies && query.Proxies.length !== 0) {
-        proxyList.push(...parseProxy(query.Proxies));
+    // 添加自定义节点
+    if (query.proxies && query.proxies.length !== 0) {
+        proxyList.push(...await parseProxy(query.proxies));
     }
 
-    // Add subscription name to the proxy names
-    proxyList.forEach(proxy => {
-        if (proxy.SubName) {
-            proxy.Name = `${proxy.SubName.trim()} ${proxy.Name.trim()}`;
-        }
-    });
-
-    // Remove duplicates
+    // 去掉配置相同的节点
     const proxiesMap = {};
     const newProxies = [];
     proxyList.forEach(proxy => {
-        const key = `${proxy.Server}:${proxy.Port}:${proxy.Type}`;
+        const key = `${proxy.server}:${proxy.port}:${proxy.type}`;
+        console.log(key)
         if (!proxiesMap[key]) {
             proxiesMap[key] = proxy;
             newProxies.push(proxy);
@@ -153,8 +139,8 @@ async function buildSub(clashType, query, templatePath) {
     });
     proxyList = newProxies;
 
-    // Remove proxies based on regex pattern
-    if (query.Remove.trim() !== "") {
+    // 删除节点
+    if (query.remove && query.remove.trim() !== "") {
         try {
             const removeReg = new RegExp(query.Remove);
             proxyList = proxyList.filter(proxy => !removeReg.test(proxy.Name));
@@ -164,9 +150,6 @@ async function buildSub(clashType, query, templatePath) {
         }
     }
 
-    // Here you should merge your proxies with the template
-    // Assuming `temp` is your subscription object to be returned
-    // and it has a field `Proxies` or similar to hold the proxy list
     temp.Proxies = proxyList;
 
     return continueBuildSub(proxyList, query, temp);
@@ -198,7 +181,7 @@ async function continueBuildSub(proxyList, query, temp) {
 
     // Trim proxy names
     proxyList.forEach(proxy => {
-        proxy.Name = proxy.Name.trim();
+        proxy.name = proxy.name.trim();
     });
 
     // Assuming proxyList is ready and temp is the template to be filled
