@@ -49,7 +49,7 @@ function parsePlugin(proxyURL) {
     });
 }
 
-// 使用示例:
-// parsePlugin('your_proxy_url_here')
-//   .then(proxy => console.log(proxy))
-//   .catch(error => console.error(error));
+
+module.exports = {
+    parsePlugin
+}

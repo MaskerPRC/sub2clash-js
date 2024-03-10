@@ -74,3 +74,8 @@ function parseShadowsocksR(proxy) {
 
     return result;
 }
+
+
+module.exports = {
+    parseShadowsocksR
+}

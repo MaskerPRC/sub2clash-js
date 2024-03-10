@@ -1,6 +1,6 @@
 const yaml = require('js-yaml');
 const { validateQuery } = require('./validator'); // 假设你已经有了对应的JavaScript实现
-const { buildSub } = require('./index'); // 假设你已经有了BuildSub的JavaScript实现
+const { buildSub } = require('./default'); // 假设你已经有了BuildSub的JavaScript实现
 const config = require('./config'); // 假设你已经有了对应的配置文件的JavaScript版本
 
 async function submodHandler(req, res) {

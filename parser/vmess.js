@@ -1,6 +1,3 @@
-const atob = require('atob'); // 如果你使用的是 Node.js 环境，可能需要这个库来进行 base64 解码
-const { Proxy, WSOptions } = require('./model'); // 假设你有相应的类
-
 function decodeBase64(str) {
     // Node.js 自带的 Buffer 可以用来处理 Base64 编码和解码
     // 如果你在浏览器环境中使用 atob() 函数，那么在 Node.js 中应该使用 Buffer
@@ -34,7 +31,7 @@ async function parseVmess(proxy) {
     if (vmess.net === 'ws' && !vmess.path) vmess.path = '/';
     if (vmess.net === 'ws' && !vmess.host) vmess.host = vmess.add;
 
-    const result = new Proxy({
+    const result = {
         name: vmess.ps,
         type: 'vmess',
         server: vmess.add,
@@ -49,15 +46,15 @@ async function parseVmess(proxy) {
         skipCertVerify: true,
         servername: vmess.add,
         network: vmess.net,
-    });
+    };
 
     if (vmess.net === 'ws') {
-        result.wsopts = new WSOptions({
+        result.wsopts = {
             path: vmess.path,
             headers: {
                 Host: vmess.host,
             },
-        });
+        };
     }
 
     return result;

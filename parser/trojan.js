@@ -47,14 +47,9 @@ function parseTrojan(proxy) {
         result.Name = serverAndPort[0];
     }
 
-    return result;
+    return Promise.resolve(result);
 }
 
-// 示例用法
-try {
-    const proxyString = 'trojan://password@server:port?sni=example.com#NodeName';
-    const proxy = parseTrojan(proxyString);
-    console.log(proxy);
-} catch (error) {
-    console.error(error.message);
+module.exports = {
+    parseTrojan
 }

@@ -92,11 +92,6 @@ function parseVless(proxy) {
     return result;
 }
 
-// 示例使用
-try {
-    const proxyStr = 'vless://...'; // 你的VLESS字符串
-    const proxyObj = parseVless(proxyStr);
-    console.log(proxyObj);
-} catch (error) {
-    console.error(error.message);
+module.exports = {
+    parseVless
 }

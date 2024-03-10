@@ -24,14 +24,14 @@ async function parseGroupTags(subURL, newProxies) {
 
 function parseCountries(newProxies) {
     newProxies.forEach(proxy => {
-        proxy.Country = getCountryName(proxy.Name);
+        proxy.Country = getCountryName(proxy.name);
     });
 }
 
 async function walkSubsForProxyList(sub, query) {
     try {
-        for (let subURL of query.Subs) {
-            const data = await loadSubscription(subURL, query.Refresh);
+        for (let subURL of query.subs) {
+            const data = await loadSubscription(subURL, query.refresh);
             let subName = "";
             if (subURL.includes("#")) {
                 subName = subURL.substring(subURL.lastIndexOf("#") + 1);
@@ -43,19 +43,21 @@ async function walkSubsForProxyList(sub, query) {
                 Object.assign(sub, parsedData); // Assuming sub is an object that should be filled with the parsed data
                 newProxies = sub.Proxies || [];
             } catch (err) {
-                // Assuming regex and proxy parsing utilities are implemented
-                const reg = new RegExp("(ssr|ss|vmess|trojan|vless)://");
-                if (reg.test(data)) {
-                    newProxies = parseProxy(data.split("\n"));
-                } else {
-                    // If the data doesn't match, try Base64 decoding
-                    try {
-                        const base64Decoded = decodeBase64(data);
-                        newProxies = parseProxy(base64Decoded.split("\n"));
-                    } catch (err) {
-                        console.log("Parse subscription failed", { url: subURL, data, error: err });
-                        return [false, new Error("加载订阅失败: " + err.message)];
-                    }
+
+            }
+
+            // Assuming regex and proxy parsing utilities are implemented
+            const reg = new RegExp("(ssr|ss|vmess|trojan|vless)://");
+            if (reg.test(data)) {
+                newProxies = parseProxy(data.split("\n"));
+            } else {
+                // If the data doesn't match, try Base64 decoding
+                try {
+                    const [base64Decoded, err] = decodeBase64(data.toString());
+                    newProxies = await parseProxy(base64Decoded.split("\n"));
+                } catch (err) {
+                    console.log("Parse subscription failed", { url: subURL, data, error: err });
+                    return [false, new Error("加载订阅失败: " + err.message)];
                 }
             }
 

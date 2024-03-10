@@ -1037,3 +1037,10 @@ var CountryISO = {
 	"ZM": "赞比亚(ZM)",
 	"ZW": "津巴布韦(ZW)",
 }
+
+module.exports = {
+	CountryEnglishName,
+	CountryChineseName,
+	CountryFlag,
+	CountryISO
+}

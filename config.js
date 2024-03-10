@@ -3,7 +3,7 @@ require('dotenv').config();
 
 class Config {
     constructor() {
-        this.port = parseInt(process.env.PORT, 10) || 8011;
+        this.port = parseInt(process.env.PORT, 10) || 8012;
         this.metaTemplate = process.env.META_TEMPLATE || '';
         this.clashTemplate = process.env.CLASH_TEMPLATE || 'template_clash.yaml';
         this.requestRetryTimes = parseInt(process.env.REQUEST_RETRY_TIMES, 10) || 3;

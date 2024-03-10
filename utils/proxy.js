@@ -1,5 +1,12 @@
 // 假设国家数据和相关函数是以这种方式导入的
 const { CountryFlag, CountryChineseName, CountryISO, CountryEnglishName } = require('../enums/country_code_map');
+const {parseTrojan} = require("../parser/trojan");
+const {parseVmess} = require("../parser/vmess");
+const {parseVless} = require("../parser/vless");
+const {parseShadowsocksR} = require("../parser/ssr");
+const {parseHysteria2} = require("../parser/hysteria2");
+const {parsePlugin} = require("../parser/plugin");
+const {parseSS} = require("../parser/ss");
 
 function getCountryName(countryKey) {
     const countryMaps = [CountryFlag, CountryChineseName, CountryISO, CountryEnglishName];
@@ -64,42 +71,33 @@ async function parseProxy(proxies) {
 
             // 根据代理类型调用相应的解析方法
             if (proxy.startsWith("ss://")) {
-                ({ proxyItem, err } = await ProxyParser.parseSS(proxy));
+                (proxyItem = await parseSS(proxy));
             } else if (proxy.startsWith("trojan://")) {
-                ({ proxyItem, err } = await ProxyParser.parseTrojan(proxy));
+                (proxyItem = await parseTrojan(proxy));
             } else if (proxy.startsWith("vmess://")) {
-                ({ proxyItem, err } = await ProxyParser.parseVmess(proxy));
+                (proxyItem = await parseVmess(proxy));
             } else if (proxy.startsWith("vless://")) {
-                ({ proxyItem, err } = await ProxyParser.parseVless(proxy));
+                (proxyItem = await parseVless(proxy));
             } else if (proxy.startsWith("ssr://")) {
-                ({ proxyItem, err } = await ProxyParser.parseShadowsocksR(proxy));
+                (proxyItem = await parseShadowsocksR(proxy));
             } else if (proxy.startsWith("hysteria2://")) {
-                ({ proxyItem, err } = await ProxyParser.parseHysteria2(proxy));
+                (proxyItem = await parseHysteria2(proxy));
             }
 
-            if (err === null) {
-                // 解析plugin字段
-                let pluginProxyItem = {};
-                try {
-                    pluginProxyItem = await ProxyParser.parsePlugin(proxy);
-                    proxyItem.Plugin = pluginProxyItem.Plugin;
-                    proxyItem.PluginOpts = pluginProxyItem.PluginOpts;
-                } catch (pluginErr) {
-                    console.debug("parse plugin failed", proxy, pluginErr);
-                }
-                result.push(proxyItem);
-            } else {
-                console.debug("parse proxy failed", proxy, err);
+            // 解析plugin字段
+            let pluginProxyItem = {};
+            try {
+                pluginProxyItem = await parsePlugin(proxy);
+                proxyItem.Plugin = pluginProxyItem.Plugin;
+                proxyItem.PluginOpts = pluginProxyItem.PluginOpts;
+            } catch (pluginErr) {
+                console.debug("parse plugin failed", proxy, pluginErr);
             }
+            result.push(proxyItem);
         }
     }
 
     return result;
-}
-
-async function parseSS(proxy) {
-    // 解析SS代理，需要根据实际逻辑实现
-    return { proxyItem: {}, err: null };
 }
 
 function addAllNewProxies(lazy, clashType, proxies) {
@@ -127,4 +125,9 @@ function getSupportProxyTypes(clashType) {
         hysteria2: true
         // 其他代理类型...
     };
+}
+
+module.exports = {
+    parseProxy,
+    getCountryName
 }

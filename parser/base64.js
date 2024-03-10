@@ -11,10 +11,6 @@ const decodeBase64 = (s) => {
     }
 };
 
-// 使用示例
-const [result, error] = decodeBase64('您的Base64编码字符串');
-if (error) {
-    console.error('解码错误:', error);
-} else {
-    console.log('解码结果:', result);
+module.exports = {
+    decodeBase64
 }

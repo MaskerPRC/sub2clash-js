@@ -70,9 +70,6 @@ function parseSS(proxy) {
     return Promise.resolve(result);
 }
 
-// 使用示例
-parseSS('你的ss://URL').then(proxy => {
-    console.log(proxy);
-}).catch(error => {
-    console.error(error);
-});
+module.exports = {
+    parseSS
+}

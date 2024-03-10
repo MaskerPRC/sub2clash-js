@@ -52,7 +52,6 @@ function parseHysteria2(proxy) {
     });
 }
 
-// 使用示例
-parseHysteria2('hysteria2://password@server:port/?name=myProxy&obfs=obfsMethod&obfs-password=obfsPass&sni=sniValue&insecure=1')
-    .then(proxy => console.log(proxy))
-    .catch(error => console.error(error.message));
+module.exports = {
+    parseHysteria2
+}
