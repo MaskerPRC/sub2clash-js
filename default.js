@@ -24,6 +24,9 @@ async function parseGroupTags(subURL, newProxies) {
 
 function parseCountries(newProxies) {
     newProxies.forEach(proxy => {
+        if (!proxy.name) {
+            proxy.name = ""
+        }
         proxy.Country = getCountryName(proxy.name);
     });
 }
@@ -120,6 +123,7 @@ async function buildSub(clashType, query, templatePath) {
         return [null, error];
     }
 
+    // todo: 从这里继续
     if (query.Proxies && query.Proxies.length !== 0) {
         proxyList.push(...parseProxy(query.Proxies));
     }
