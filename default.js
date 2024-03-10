@@ -38,7 +38,7 @@ async function walkSubsForProxyList(sub, query) {
             try {
                 data = await loadSubscription(subURL, query.refresh);
             } catch (err) {
-                console.error(err);
+                console.error("链接无法获取: " + subURL);
                 continue;
             }
             let subName = "";
