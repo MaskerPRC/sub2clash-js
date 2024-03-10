@@ -34,7 +34,13 @@ function parseCountries(newProxies) {
 async function walkSubsForProxyList(sub, query) {
     try {
         for (let subURL of query.subs) {
-            const data = await loadSubscription(subURL, query.refresh);
+            let data;
+            try {
+                data = await loadSubscription(subURL, query.refresh);
+            } catch (err) {
+                console.error(err);
+                continue;
+            }
             let subName = "";
             if (subURL.includes("#")) {
                 subName = subURL.substring(subURL.lastIndexOf("#") + 1);
