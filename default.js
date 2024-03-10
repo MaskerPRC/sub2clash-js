@@ -12,12 +12,12 @@ const {loadTemplate} = require("./utils/template");
 
 async function parseGroupTags(subURL, newProxies) {
     const parsedURL = new url.URL(subURL);
-    const groupsParam = parsedURL.searchParams.get("SubTags");
+    const groupsParam = parsedURL.searchParams.get("subTags");
 
     if (groupsParam) {
         const subTags = groupsParam.split(",");
         newProxies.forEach(proxy => {
-            proxy.SubTags = subTags;
+            proxy.subTags = subTags;
         });
     }
 }
@@ -27,7 +27,7 @@ function parseCountries(newProxies) {
         if (!proxy.name) {
             proxy.name = ""
         }
-        proxy.Country = getCountryName(proxy.name);
+        proxy.country = getCountryName(proxy.name);
     });
 }
 
@@ -143,7 +143,7 @@ async function buildSub(clashType, query, templatePath) {
     if (query.remove && query.remove.trim() !== "") {
         try {
             const removeReg = new RegExp(query.Remove);
-            proxyList = proxyList.filter(proxy => !removeReg.test(proxy.Name));
+            proxyList = proxyList.filter(proxy => !removeReg.test(proxy.name));
         } catch (err) {
             console.log("Remove regexp compile failed", { error: err.message });
             return [null, new Error("remove 参数非法: " + err.message)];
@@ -161,8 +161,8 @@ async function continueBuildSub(proxyList, query, temp) {
         const replaceRegs = query.ReplaceKeys.map(v => new RegExp(v));
         proxyList.forEach((proxy, i) => {
             replaceRegs.forEach((reg, j) => {
-                if (reg.test(proxy.Name)) {
-                    proxy.Name = proxy.Name.replace(reg, query.ReplaceTo[j]);
+                if (reg.test(proxy.name)) {
+                    proxy.name = proxy.name.replace(reg, query.ReplaceTo[j]);
                 }
             });
         });
@@ -171,11 +171,11 @@ async function continueBuildSub(proxyList, query, temp) {
     // 重名检测
     const names = {};
     proxyList.forEach(proxy => {
-        if (names[proxy.Name]) {
-            names[proxy.Name]++;
-            proxy.Name = `${proxy.Name} ${names[proxy.Name]}`;
+        if (names[proxy.name]) {
+            names[proxy.name]++;
+            proxy.name = `${proxy.name} ${names[proxy.name]}`;
         } else {
-            names[proxy.Name] = 1;
+            names[proxy.name] = 1;
         }
     });
 
@@ -231,9 +231,9 @@ async function continueBuildSub(proxyList, query, temp) {
             Interval: 3600,
         };
         if (provider.Prepend) {
-            prependRuleProvider(temp, provider.Name, provider.Group, ruleProvider);
+            prependRuleProvider(temp, provider.name, provider.Group, ruleProvider);
         } else {
-            appendRuleProvider(temp, provider.Name, provider.Group, ruleProvider);
+            appendRuleProvider(temp, provider.name, provider.Group, ruleProvider);
         }
     });
 
@@ -268,8 +268,8 @@ function matchProxy(proxy, condition) {
 
 function getProxyFieldArray(proxy, field) {
     switch (field) {
-        case "SubTags":
-            return proxy.SubTags;
+        case "subTags":
+            return proxy.subTags;
         default:
             return [];
     }

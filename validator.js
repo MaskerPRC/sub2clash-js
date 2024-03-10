@@ -7,7 +7,7 @@ class RuleProviderStruct {
         this.Url = url;
         this.Group = group;
         this.Prepend = prepend;
-        this.Name = name;
+        this.name = name;
     }
 }
 

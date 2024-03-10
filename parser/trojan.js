@@ -42,9 +42,9 @@ function parseTrojan(proxy) {
 
     // 如果有节点名称
     if (serverInfo.length === 2) {
-        result.Name = decodeURIComponent(serverInfo[1].trim());
+        result.name = decodeURIComponent(serverInfo[1].trim());
     } else {
-        result.Name = serverAndPort[0];
+        result.name = serverAndPort[0];
     }
 
     return Promise.resolve(result);
