@@ -48,4 +48,7 @@ async function fetchSubscriptionFromAPI(url) {
     }
 }
 
-// 注意：这里假设已经有函数Get(url)，并且config.Default.CacheExpire已通过某种方式配置。
+module.exports = {
+    loadSubscription,
+    fetchSubscriptionFromAPI
+}

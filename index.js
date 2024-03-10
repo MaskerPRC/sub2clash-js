@@ -6,6 +6,8 @@ const { getCountryName, parseProxy } = require('./utils/proxy'); // 同样，假
 const fs = require('fs').promises;
 const { addAllNewProxies, prependRules, appendRules, prependRuleProvider, appendRuleProvider } = require('./utils/proxy'); // 假设这些函数已经实现
 const crypto = require('crypto');
+const {loadSubscription} = require("./utils/sub");
+const {loadTemplate} = require("./utils/template");
 
 
 async function parseGroupTags(subURL, newProxies) {
@@ -79,16 +81,9 @@ async function walkSubsForProxyList(sub, query) {
     }
 }
 
-// 这里假设loadSubscription是一个异步函数，用于加载并返回订阅内容
-async function loadSubscription(subURL, refresh) {
-    // 实现具体的订阅加载逻辑，可能需要调用外部API或进行HTTP请求
-    const response = await axios.get(subURL); // 示例请求
-    return response.data; // 假设直接返回响应体作为数据
-}
-
 async function buildSub(clashType, query, templatePath) {
     let template = templatePath;
-    if (query.Template !== "") {
+    if (query.Template) {
         template = query.Template;
     }
 
@@ -97,15 +92,13 @@ async function buildSub(clashType, query, templatePath) {
         const parsedURL = new URL(template);
         if (parsedURL.protocol === 'http:' || parsedURL.protocol === 'https:') {
             // Assuming it's an online HTTP configuration
-            const response = await axios.get(template);
+            const response = await loadSubscription(template, query.refresh)
             templateBytes = response.data;
         } else {
-            // Assuming it's a file path
-            templateBytes = await fs.readFile(template, 'utf8');
+            templateBytes = await loadTemplate(template)
         }
     } catch (err) {
-        console.log("Load template failed", { template, error: err.message });
-        return [null, new Error("加载模板失败: " + err.message)];
+        templateBytes = await loadTemplate(template)
     }
 
     let temp;
@@ -164,9 +157,8 @@ async function buildSub(clashType, query, templatePath) {
     // and it has a field `Proxies` or similar to hold the proxy list
     temp.Proxies = proxyList;
 
-    return [temp, null];
+    return continueBuildSub(proxyList, query, temp);
 }
-
 
 async function continueBuildSub(proxyList, query, temp) {
     // 重命名
@@ -329,56 +321,6 @@ function matchProxyFieldValue(value, condition) {
     }
     return true;
 }
-// 假设proxyList是一个包含代理的数组，temp是一个订阅对象
-
-// 重命名
-if (query.ReplaceKeys && query.ReplaceKeys.length > 0) {
-    const replaceRegs = query.ReplaceKeys.map(key => new RegExp(key));
-    proxyList.forEach(proxy => {
-        replaceRegs.forEach((reg, index) => {
-            proxy.Name = proxy.Name.replace(reg, query.ReplaceTo[index]);
-        });
-    });
-}
-
-// 重名检测
-const names = {};
-proxyList.forEach(proxy => {
-    if (names[proxy.Name]) {
-        names[proxy.Name] += 1;
-        proxy.Name += ` ${names[proxy.Name]}`;
-    } else {
-        names[proxy.Name] = 1;
-    }
-});
-
-// 添加所有新节点
-addAllNewProxies(temp, query.Lazy, clashType, ...proxyList);
-
-// 排序策略组（示例假设存在相应的排序函数）
-
-// 合并新节点和模板
-mergeSubAndTemplate(temp, t, query.Lazy);
-
-// 处理自定义规则
-query.Rules.forEach(rule => {
-    if (rule.Prepend) {
-        prependRules(temp, rule.Rule);
-    } else {
-        appendRules(temp, rule.Rule);
-    }
-});
-
-// 处理自定义ruleProvider
-query.RuleProviders.forEach(provider => {
-    const hash = crypto.createHash('sha224').update(provider.Url).digest('hex');
-    const providerObj = {
-        Type: "http",
-        Behavior: provider.Behavior,
-
-    }
-});
-
 function matchProxyFieldValue(fieldValue, condition) {
     for (const [key, value] of Object.entries(condition)) {
         switch (key) {
@@ -528,3 +470,8 @@ function mergeSubAndTemplate(temp, sub, lazy) {
 }
 
 // 注意: 需要确保parseSyntaxA, addToGroup, 和 addNewGroup等函数已经按照之前的指示重写并可用。
+
+module.exports = {
+    buildSub,
+    loadSubscription
+}

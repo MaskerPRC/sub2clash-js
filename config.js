@@ -41,8 +41,8 @@ config.validate(); // 校验环境变量
 
 // 导出配置对象和任何其他需要导出的变量
 module.exports = {
-    config,
+    default: config,
     // 这里也可以导出Version和Dev变量，根据需要添加
-    // version: '1.0.0',
-    // dev: 'development',
+    Version: '1.0.0',
+    dev: 'development',
 };

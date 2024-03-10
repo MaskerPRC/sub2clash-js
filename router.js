@@ -1,16 +1,15 @@
 const express = require('express');
 const path = require('path');
 const app = express();
-const port = 3000; // 你可以根据需要更改端口号
+const config = require('./config');
+
+const port = config.default.port; // 你可以根据需要更改端口号
 
 // 引入自定义的中间件和控制器
-const { zapLogger } = require('./middleware/zapLogger');
-const { submodHandler } = require('./controller/submodHandler');
-const config = require('./config');
+const { submodHandler } = require('./clash');
 
 // 配置静态文件服务
 app.use(express.static('static'));
-app.use(zapLogger());
 
 // 设置模板引擎，如果你的模板不是html格式，需要更改
 app.set('view engine', 'html');
@@ -32,8 +31,8 @@ app.get('/', (req, res) => {
     });
 });
 
-app.get('/clash', (req, res) => {
-    submodHandler(req, res);
+app.get('/clash', async (req, res) => {
+    await submodHandler(req, res);
 });
 
 app.listen(port, () => {

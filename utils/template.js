@@ -1,6 +1,6 @@
-const fs = require('fs').promises;
+const fs = require('fs');
 const path = require('path');
-const config = require('./config'); // 假设这里是你的配置文件路径
+const config = require('../config'); // 假设这里是你的配置文件路径
 
 /**
  * 加载模板
@@ -42,9 +42,6 @@ async function writeDefaultTemplate(templateClash) {
     }
 }
 
-// 假设使用的例子
-writeDefaultTemplate('这里是模板内容').then(() => {
-    console.log('模板已成功写入');
-}).catch((err) => {
-    console.error('写入模板时发生错误:', err);
-});
+module.exports = {
+    loadTemplate
+}

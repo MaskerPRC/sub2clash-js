@@ -1,10 +1,5 @@
-const express = require('express');
-const bodyParser = require('body-parser');
 const crypto = require('crypto');
 const url = require('url');
-
-const app = express();
-app.use(bodyParser.urlencoded({ extended: true }));
 
 class RuleProviderStruct {
     constructor(behavior, url, group, prepend, name) {
@@ -22,17 +17,6 @@ class RuleStruct {
         this.Prepend = prepend;
     }
 }
-
-app.post('/validate', (req, res) => {
-    let query = req.body;
-    try {
-        validateQuery(query);
-        res.json(query);
-    } catch (error) {
-        res.status(400).json({ error: error.message });
-    }
-});
-
 function validateQuery(query) {
     if ((query.sub === undefined || query.sub === '') && (query.proxy === undefined || query.proxy === '')) {
         throw new Error('参数错误: sub 和 proxy 不能同时为空');
@@ -95,9 +79,15 @@ function validateQuery(query) {
         query.ReplaceKeys = replaces.map(r => r[1]);
         query.ReplaceTo = replaces.map(r => r[2]);
     }
+
+    query.refresh = query.refresh === 'true';
+    query.lazy = query.lazy === 'true';
+    query.nodeList = query.nodeList === 'true';
+    query.autoTest = query.autoTest === 'true';
+
+    return query;
 }
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+module.exports = {
+    validateQuery
+}
