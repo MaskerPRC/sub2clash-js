@@ -8,6 +8,8 @@ const { addAllNewProxies, prependRules, appendRules, prependRuleProvider, append
 const crypto = require('crypto');
 const {loadSubscription} = require("./utils/sub");
 const {loadTemplate} = require("./utils/template");
+const Query = require("query");
+
 
 
 async function parseGroupTags(subURL, newProxies) {
@@ -394,7 +396,7 @@ function parseAlias(input) {
     }
 }
 
-function mergeSubAndTemplate(temp, sub, lazy) {
+async function mergeSubAndTemplate(temp, sub, lazy) {
     // 统计所有国家策略组名称
     sub.proxyGroups = sub.proxyGroups || []
     const countryGroupNames = sub.proxyGroups
@@ -411,7 +413,7 @@ function mergeSubAndTemplate(temp, sub, lazy) {
     const existProxyName = new Set(); // 使用Set来检查存在性
 
     // 将订阅中的策略组添加到模板中
-    temp['proxy-groups'].forEach(group => {
+    for (const group of temp['proxy-groups']) {
         const newProxies = [];
         const countryGroupMap = sub.proxyGroups.reduce((acc, group) => {
             if (group.isCountryGroup) {
@@ -420,7 +422,7 @@ function mergeSubAndTemplate(temp, sub, lazy) {
             return acc;
         }, {});
 
-        group.proxies.forEach(proxyName => {
+        for (let proxyName of group.proxies) {
             if (proxyName.startsWith("<") && proxyName.endsWith(">")) {
                 let [alias, value] = parseAlias(proxyName.slice(1, -1)); // 移除尖括号并解析别名
 
@@ -432,8 +434,10 @@ function mergeSubAndTemplate(temp, sub, lazy) {
                     const [parsedProxyNames] = parseSyntaxA("{}", sub);
                     newProxies.push(...parsedProxyNames);
                 } else {
-                    const syntax = value;
-                    const [parsedProxyNames, proxies] = parseSyntaxA(syntax, sub);
+                    const mongoSql = JSON.parse(value);
+                    const proxies = sub.proxies;
+
+                    var parsedProxyNames = Query.query(proxies, mongoSql);
 
                     if (!existProxyName.has(proxyName)) {
                         existProxyName.add(proxyName);
@@ -454,10 +458,10 @@ function mergeSubAndTemplate(temp, sub, lazy) {
             } else {
                 newProxies.push(proxyName);
             }
-        });
+        }
 
         group.proxies = newProxies;
-    });
+    }
 
     temp['proxy-groups'].push(...sub.proxyGroups);
 }
