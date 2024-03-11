@@ -200,7 +200,7 @@ async function continueBuildSub(clashType, proxyList, query, temp) {
     //     default:
     // }
 
-    mergeSubAndTemplate(temp, t, query.lazy);
+    await mergeSubAndTemplate(temp, t, query.lazy);
 
     // 处理自定义规则
     query.Rules = query.Rules || [];
@@ -352,12 +352,11 @@ function parseSyntaxA(syntax, sub) {
     return [matchedProxyNames, matchedProxies];
 }
 
-function addNewGroup(sub, insertGroup, autotest, lazy) {
+function addNewGroup(proxyGroups, insertGroup, autotest, lazy) {
     const newGroup = {
         name: insertGroup,
         type: autotest ? 'url-test' : 'select',
         proxies: [],
-        isCountryGroup: true,
         size: 1,
         ...(autotest && { // 条件性地添加额外的属性
             url: "https://www.gstatic.com/generate_204",
@@ -367,11 +366,11 @@ function addNewGroup(sub, insertGroup, autotest, lazy) {
         }),
     };
 
-    sub.proxyGroups.push(newGroup);
+    proxyGroups.push(newGroup);
 }
 
-function addToGroup(sub, proxy, insertGroup) {
-    const group = sub.proxyGroups.find(g => g.name === insertGroup);
+function addToGroup(proxyGroups, proxy, insertGroup) {
+    const group = proxyGroups.find(g => g.name === insertGroup);
     if (group) {
         group.proxies.push(proxy.name);
         group.size++;
@@ -399,30 +398,21 @@ function parseAlias(input) {
 async function mergeSubAndTemplate(temp, sub, lazy) {
     // 统计所有国家策略组名称
     sub.proxyGroups = sub.proxyGroups || []
-    const countryGroupNames = sub.proxyGroups
-        .filter(group => group.isCountryGroup)
-        .map(group => group.name);
-
-    // 获取所有代理的名称
-    const proxyNames = sub.proxies.map(proxy => proxy.name);
 
     // 将订阅中的代理添加到模板中
     temp.proxies = temp.proxies || [];
     temp.proxies.push(...sub.proxies);
 
-    const existProxyName = new Set(); // 使用Set来检查存在性
+    const existProxyName = new Map(); // 使用Set来检查存在性
 
     // 将订阅中的策略组添加到模板中
     for (const group of temp['proxy-groups']) {
         const newProxies = [];
-        const countryGroupMap = sub.proxyGroups.reduce((acc, group) => {
-            if (group.isCountryGroup) {
-                acc[group.name] = group;
-            }
-            return acc;
-        }, {});
 
+        // 遍历每一个mongodb过滤器，获取所有的过滤器，将当前组的过滤器先行添加到当前组，并最后合并到一个全部的过滤器组，最后一次性附加到每个组的最后
         for (let proxyName of group.proxies) {
+
+            // 保留语法处理
             if (proxyName.startsWith("<") && proxyName.endsWith(">")) {
                 let [alias, value] = parseAlias(proxyName.slice(1, -1)); // 移除尖括号并解析别名
 
@@ -431,37 +421,67 @@ async function mergeSubAndTemplate(temp, sub, lazy) {
                 }
 
                 if (proxyName === "<>") {
-                    const [parsedProxyNames] = parseSyntaxA("{}", sub);
-                    newProxies.push(...parsedProxyNames);
+                    // 为空表示全部节点附加到最后，而不是作为一个查询组
+                    newProxies.push(...sub.proxies);
                 } else {
+                    // 解析一个过滤器，获取节点列表，
                     const mongoSql = JSON.parse(value);
                     const proxies = sub.proxies;
+                    let proxiesFiltered = await Query.query(proxies, mongoSql);
 
-                    var parsedProxyNames = Query.query(proxies, mongoSql);
-
-                    if (!existProxyName.has(proxyName)) {
-                        existProxyName.add(proxyName);
-                        proxies.forEach(proxy => {
-                            let insertSuccess = addToGroup(sub, proxy, proxyName);
-
-                            if (!insertSuccess) {
-                                addNewGroup(sub, proxyName, true, lazy);
-                                addToGroup(sub, proxy, proxyName);
-                            }
-                        });
-                    }
-
-                    if (parsedProxyNames.length > 0) {
+                    // 将策略组名称加入到模板策略组中
+                    if (proxiesFiltered.length > 0) {
                         newProxies.push(proxyName);
                     }
+
+                    // 并生成一个自动生成的url-test策略组，需要检测此策略组是否存在，需要将所有的查询结果插入到此策略组
+                    if (!existProxyName.has(proxyName)) {
+                        // 临时存储所有需要生成的url-test策略组
+                        existProxyName.set(proxyName, proxiesFiltered);
+                    }
+
                 }
             } else {
+                // 普通节点名
                 newProxies.push(proxyName);
             }
         }
 
+        // 模板的策略组
         group.proxies = newProxies;
     }
+
+    // 对每个模板策略组进行遍历，将所有的自动测速策略组附加到模板策略组最后
+    for (const group of temp['proxy-groups']) {
+        const name = group.name;
+        // 获取当前组的所有模板策略组
+        const proxiesSet = new Set();
+        proxiesSet.add(name)
+        for (let proxyName of group.proxies) {
+            proxiesSet.add(proxyName);
+        }
+        // 遍历自动测试策略组，添加到每个模板策略组的最后
+        existProxyName.forEach((value, key) => {
+            const proxyName = key;
+            if (!proxiesSet.has(proxyName) && value.length) {
+                group.proxies.push(proxyName);
+            }
+        });
+    }
+
+    // 生成所有的自动url-test策略组
+    existProxyName.forEach((value, key) => {
+        const proxyName = key;
+        const proxies = value;
+        proxies.forEach(proxy => {
+            let insertSuccess = addToGroup(temp['proxy-groups'], proxy, proxyName);
+
+            if (!insertSuccess) {
+                addNewGroup(temp['proxy-groups'], proxyName, true, lazy);
+                addToGroup(temp['proxy-groups'], proxy, proxyName);
+            }
+        });
+    });
 
     temp['proxy-groups'].push(...sub.proxyGroups);
 }
