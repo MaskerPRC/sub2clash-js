@@ -37,7 +37,7 @@ function parseTrojan(proxy) {
         port: port,
         udp: true,
         password: parts[0].trim(),
-        sni: params.get('sni'),
+        sni: params.get('sni') || undefined,
         "skip-cert-verify": true,
     };
 
