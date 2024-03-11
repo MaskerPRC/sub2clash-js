@@ -42,8 +42,8 @@ async function parseVmess(proxy) {
         udp: true,
         tls: vmess.tls === 'tls',
         fingerprint: vmess.fp,
-        clientFingerprint: 'chrome',
-        skipCertVerify: true,
+        "client-fingerprint": 'chrome',
+        "skip-cert-verify": true,
         servername: vmess.add,
         network: vmess.net,
     };

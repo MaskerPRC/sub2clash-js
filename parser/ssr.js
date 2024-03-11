@@ -1,19 +1,5 @@
 const querystring = require('querystring');
 
-class Proxy {
-    constructor(name, type, server, port, protocol, cipher, obfs, password, obfsParam, protocolParam) {
-        this.name = name;
-        this.type = type;
-        this.server = server;
-        this.port = port;
-        this.protocol = protocol;
-        this.cipher = cipher;
-        this.obfs = obfs;
-        this.password = password;
-        this.obfsParam = obfsParam;
-        this.protocolParam = protocolParam;
-    }
-}
 
 function decodeBase64(str) {
     return Buffer.from(str, 'base64').toString('utf8');
@@ -59,18 +45,18 @@ function parseShadowsocksR(proxy) {
         remarks = decodeBase64(params['remarks']);
     }
 
-    const result = new Proxy(
-        remarks || parts[0],
-        'ssr',
-        parts[0],
+    const result = {
+        name: remarks || parts[0],
+        type: 'ssr',
+        server: parts[0],
         port,
-        parts[2],
-        parts[3],
-        parts[4],
-        parts[5],
-        obfsParam,
-        protoParam,
-    );
+        protocol: parts[2],
+        cipher: parts[3],
+        obfs: parts[4],
+        password: parts[5],
+        "obfs-param": obfsParam,
+        protocolParam: protoParam,
+    };
 
     return result;
 }

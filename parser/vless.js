@@ -1,26 +1,5 @@
 const url = require('url');
 
-class Proxy {
-    constructor({type, server, port, uuid, udp, sni, network, tls, flow, fingerprint, servername, realityOpts, alpn, wsOpts, grpcOpts, name}) {
-        this.type = type;
-        this.server = server;
-        this.port = port;
-        this.uuid = uuid;
-        this.udp = udp;
-        this.sni = sni;
-        this.network = network;
-        this.tls = tls;
-        this.flow = flow;
-        this.fingerprint = fingerprint;
-        this.servername = servername;
-        this.realityOpts = realityOpts;
-        this.alpn = alpn;
-        this.wsOpts = wsOpts;
-        this.grpcOpts = grpcOpts;
-        this.name = name;
-    }
-}
-
 function parseVless(proxy) {
     if (!proxy.startsWith('vless://')) {
         throw new Error('invalid vless Url');
@@ -52,7 +31,7 @@ function parseVless(proxy) {
         name = nameParts.length === 2 ? nameParts[1] : fragment;
     }
 
-    const result = new Proxy({
+    const result = {
         type: 'vless',
         server: server.trim(),
         port: port,
@@ -64,11 +43,11 @@ function parseVless(proxy) {
         flow: params.get('flow'),
         fingerprint: params.get('fp'),
         servername: params.get('sni'),
-        realityOpts: {
-            publicKey: params.get('pbk'),
+        "reality-opts": {
+            "public-key": params.get('pbk'),
         },
         name: name,
-    });
+    };
 
     if (params.get('alpn')) {
         result.alpn = params.get('alpn').split(',');

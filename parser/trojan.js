@@ -37,7 +37,8 @@ function parseTrojan(proxy) {
         port: port,
         udp: true,
         password: parts[0].trim(),
-        dni: params.get('sni'),
+        sni: params.get('sni'),
+        "skip-cert-verify": true,
     };
 
     // 如果有节点名称

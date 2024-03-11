@@ -201,6 +201,9 @@ async function continueBuildSub(clashType, proxyList, query, temp) {
     // }
 
     await mergeSubAndTemplate(temp, t, query.lazy);
+    temp.proxies.forEach(proxy=>{
+        proxy.subTags = undefined;
+    })
 
     // 处理自定义规则
     query.Rules = query.Rules || [];

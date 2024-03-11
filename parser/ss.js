@@ -1,18 +1,5 @@
 const url = require('url');
 
-// 定义模型，类似于Go中的model.Proxy
-class Proxy {
-    constructor(type, cipher, password, server, port, udp = true, name = '') {
-        this.type = type;
-        this.cipher = cipher;
-        this.password = password;
-        this.server = server;
-        this.port = port;
-        this.udp = udp;
-        this.name = name;
-    }
-}
-
 // 解析Shadowsocks URL的函数
 function parseSS(proxy) {
     // 检查是否以ss://开头
@@ -53,7 +40,15 @@ function parseSS(proxy) {
     }
 
     // 构造结果
-    const result = new Proxy('ss', credentialParts[0].trim(), credentialParts[1].trim(), serverAndPort[0].trim(), port);
+    const result = {
+        type: 'ss',
+        cipher: credentialParts[0].trim(),
+        password: credentialParts[1].trim(),
+        server: serverAndPort[0].trim(),
+        port,
+        udp: true,
+        name: ""
+    };
 
     // 如果有节点名称
     if (serverInfo.includes('#')) {

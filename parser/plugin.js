@@ -1,13 +1,5 @@
 const url = require('url');
 
-class Proxy {
-    constructor() {
-        this.Plugin = '';
-        this.PluginOpts = {};
-        this.Tfo = false;
-    }
-}
-
 function parsePlugin(proxyURL) {
     return new Promise((resolve, reject) => {
         let parsedUrl;
@@ -17,7 +9,12 @@ function parsePlugin(proxyURL) {
             return reject(error);
         }
 
-        const proxy = new Proxy();
+        const proxy = {
+            Plugin: '',
+            PluginOpts: {},
+            Tfo: false,
+        }
+
         const queryParams = parsedUrl.searchParams;
 
         if (queryParams.has('plugin')) {

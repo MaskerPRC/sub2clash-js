@@ -43,9 +43,9 @@ function parseHysteria2(proxy) {
             port: port,
             password: parts[0],
             obfs: params.get('obfs'),
-            obfsParam: params.get('obfs-password'),
+            "obfs-param": params.get('obfs-password'),
             sni: params.get('sni'),
-            skipCertVerify: params.get('insecure') === '1',
+            "skip-cert-verify": params.get('insecure') === '1',
         };
 
         resolve(result);
