@@ -100,16 +100,21 @@ async function parseProxy(proxies) {
     return result;
 }
 
-function addAllNewProxies(lazy, clashType, proxies) {
-    const proxyTypes = Subscription.getSupportProxyTypes(clashType);
+function addAllNewProxies(sub, lazy, clashType, proxies) {
+    const proxyTypes = {
+        "ss":     true,
+        "ssr":    true,
+        "vmess":  true,
+        "trojan": true,
+    };
 
     // 遍历每个代理节点，添加节点
     proxies.forEach(proxy => {
         // 跳过无效类型
-        if (!proxyTypes[proxy.Type]) {
+        if (!proxyTypes[proxy.type]) {
             return;
         }
-        this.Proxies.push(proxy);
+        sub.proxies.push(proxy);
     });
 }
 
@@ -129,5 +134,6 @@ function getSupportProxyTypes(clashType) {
 
 module.exports = {
     parseProxy,
-    getCountryName
+    getCountryName,
+    addAllNewProxies
 }

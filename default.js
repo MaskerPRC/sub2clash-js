@@ -50,7 +50,7 @@ async function walkSubsForProxyList(sub, query, proxyList) {
             try {
                 const parsedData = yaml.load(data);
                 Object.assign(sub, parsedData); // Assuming sub is an object that should be filled with the parsed data
-                newProxies = sub.Proxies || [];
+                newProxies = sub.proxies || [];
             } catch (err) {
 
             }
@@ -131,7 +131,6 @@ async function buildSub(clashType, query, templatePath) {
     const newProxies = [];
     proxyList.forEach(proxy => {
         const key = `${proxy.server}:${proxy.port}:${proxy.type}`;
-        console.log(key)
         if (!proxiesMap[key]) {
             proxiesMap[key] = proxy;
             newProxies.push(proxy);
@@ -150,12 +149,10 @@ async function buildSub(clashType, query, templatePath) {
         }
     }
 
-    temp.Proxies = proxyList;
-
-    return continueBuildSub(proxyList, query, temp);
+    return continueBuildSub(clashType, proxyList, query, temp);
 }
 
-async function continueBuildSub(proxyList, query, temp) {
+async function continueBuildSub(clashType, proxyList, query, temp) {
     // 重命名
     if (query.ReplaceKeys && query.ReplaceKeys.length > 0) {
         const replaceRegs = query.ReplaceKeys.map(v => new RegExp(v));
@@ -179,38 +176,32 @@ async function continueBuildSub(proxyList, query, temp) {
         }
     });
 
-    // Trim proxy names
+    // trim
     proxyList.forEach(proxy => {
         proxy.name = proxy.name.trim();
     });
 
-    // Assuming proxyList is ready and temp is the template to be filled
-    let t = { Proxies: proxyList }; // Simplified version, adjust according to your structure
+    // 将新增节点都添加到临时变量 t 中，防止策略组排序错乱
+    let t = { proxies: [] };
 
-    // Sort proxy groups (placeholder, implement sorting logic as needed)
-    // Assuming temp has a ProxyGroups field to be sorted
-    switch (query.Sort) {
-        case 'sizeasc':
-            // Implement sorting by size ascending
-            break;
-        case 'sizedesc':
-            // Implement sorting by size descending
-            break;
-        case 'nameasc':
-            // Implement sorting by name ascending
-            break;
-        case 'namedesc':
-            // Implement sorting by name descending
-            break;
-        default:
-        // Default sorting, possibly by name ascending
-    }
+    // 过滤不支持的协议
+    addAllNewProxies(t, query.lazy, clashType, proxyList)
 
-    // Merge proxies and template, placeholder for the merge logic
-    // Assuming function to merge subscription data with template
-    mergeSubAndTemplate(temp, t, query.Lazy);
+    // todo: 关闭排序策略组，后续看要不要开
+    // switch (query.sort) {
+    //     case 'nameasc':
+    //         t.proxies = t.proxies.sort((a, b) => a.name - b.name);
+    //         break;
+    //     case 'namedesc':
+    //         t.proxies = t.proxies.sort((a, b) => b.name - a.name);
+    //         break;
+    //     default:
+    // }
 
-    // Custom rules handling
+    mergeSubAndTemplate(temp, t, query.lazy);
+
+    // 处理自定义规则
+    query.Rules = query.Rules || [];
     query.Rules.forEach(rule => {
         if (rule.Prepend) {
             prependRules(temp, rule.Rule);
@@ -219,7 +210,8 @@ async function continueBuildSub(proxyList, query, temp) {
         }
     });
 
-    // Custom ruleProvider handling
+    // 处理自定义 ruleProvider
+    query.RuleProviders = query.RuleProviders || [];
     query.RuleProviders.forEach(provider => {
         const hash = crypto.createHash('sha256').update(provider.Url).digest('hex');
         const name = hash.substring(0, 56); // Equivalent to Sum224 in Go
@@ -387,15 +379,24 @@ function addToGroup(sub, proxy, insertGroup) {
 }
 
 function parseAlias(input) {
-    const parts = input.split(':', 2);
-    return {
-        alias: parts.length === 2 ? parts[0] : '',
-        syntax: parts.length === 2 ? parts[1] : input
-    };
+    // 使用正则表达式匹配输入字符串
+    // 正则表达式解释：寻找字符串中的第一个冒号，并捕获冒号前的所有内容作为第一部分
+    // 冒号后的所有内容作为第二部分
+    const match = input.match(/^(.*?):(.*)$/);
+    if (match) {
+        // 如果匹配成功，返回捕获的两部分
+        // match[0] 是整个匹配的字符串，match[1] 是第一个捕获组（冒号前的内容）
+        // match[2] 是第二个捕获组（冒号后的所有内容）
+        return [match[1], match[2].trim()]; // 使用 trim() 清理第二部分的前导和尾随空格
+    } else {
+        // 如果没有匹配到（即字符串中没有冒号），按照指定的格式返回
+        return ["", input];
+    }
 }
 
 function mergeSubAndTemplate(temp, sub, lazy) {
     // 统计所有国家策略组名称
+    sub.proxyGroups = sub.proxyGroups || []
     const countryGroupNames = sub.proxyGroups
         .filter(group => group.isCountryGroup)
         .map(group => group.name);
@@ -404,16 +405,13 @@ function mergeSubAndTemplate(temp, sub, lazy) {
     const proxyNames = sub.proxies.map(proxy => proxy.name);
 
     // 将订阅中的代理添加到模板中
+    temp.proxies = temp.proxies || [];
     temp.proxies.push(...sub.proxies);
 
     const existProxyName = new Set(); // 使用Set来检查存在性
 
     // 将订阅中的策略组添加到模板中
-    temp.proxyGroups.forEach(group => {
-        if (group.isCountryGroup) {
-            return;
-        }
-
+    temp['proxy-groups'].forEach(group => {
         const newProxies = [];
         const countryGroupMap = sub.proxyGroups.reduce((acc, group) => {
             if (group.isCountryGroup) {
@@ -461,7 +459,7 @@ function mergeSubAndTemplate(temp, sub, lazy) {
         group.proxies = newProxies;
     });
 
-    temp.proxyGroups.push(...sub.proxyGroups);
+    temp['proxy-groups'].push(...sub.proxyGroups);
 }
 
 // 注意: 需要确保parseSyntaxA, addToGroup, 和 addNewGroup等函数已经按照之前的指示重写并可用。
