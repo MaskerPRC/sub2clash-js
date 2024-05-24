@@ -26,7 +26,7 @@ proxy-groups:
     proxies:
       - <🚀一元机场:{"subTags":{"$elemMatch":{"$eq":"一元机场"}}}>
       - <🚀二元机场:{"subTags":{"$elemMatch":{"$eq":"二元机场"}}}>
-      - <🚀十元机场:{"subTags":{"$elemMatch":{"$eq":"十元机场"}}, "country":{"$regex":"^(?!.*CN).+$"}}>
+      - <🚀十元机场:{"subTags":{"$elemMatch":{"$eq":"十元机场"}}, "name":{"$regex":"^(?!.*CN)(?!.*Netflix).+$"}}>
       - DIRECT
       - REJECT
   - name: 🌐欧美服务
@@ -53,7 +53,7 @@ proxy-groups:
     proxies:
       - <🚀一元机场:{"subTags":{"$elemMatch":{"$eq":"一元机场"}}}>
       - <🚀二元机场:{"subTags":{"$elemMatch":{"$eq":"二元机场"}}}>
-      - <🚀十元机场:{"subTags":{"$elemMatch":{"$eq":"十元机场"}}, "country":{"$regex":"^(?!.*CN).+$"}}>
+      - <🚀十元机场:{"subTags":{"$elemMatch":{"$eq":"十元机场"}}, "name":{"$regex":"^(?!.*CN)(?!.*Netflix).+$"}}>
       - <🚀便宜机场:{"subTags":{"$elemMatch":{"$eq":"便宜机场"}}}>
       - DIRECT
       - REJECT
@@ -113,8 +113,7 @@ rules:
   - DOMAIN-SUFFIX,openaiapi-site.azureedge.net,🌐排华服务
   - DOMAIN-SUFFIX,sentry.io,🌐排华服务
   - DOMAIN-SUFFIX,stripe.com,🌐排华服务
-  - DOMAIN-SUFFIX,huggingface.co,🌐下载服务
-  - DOMAIN-SUFFIX,huggingface.com,🌐下载服务
+  - DOMAIN-KEYWORD,cdn,🌐下载服务
   - DOMAIN-SUFFIX,npmjs.org,🌐下载服务
   - DOMAIN-SUFFIX,acl4.ssr,🌏全球直连
   - DOMAIN-SUFFIX,ip6-localhost,🌏全球直连
