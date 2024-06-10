@@ -469,12 +469,17 @@ async function mergeSubAndTemplate(temp, sub, lazy) {
             if (!proxiesSet.has(proxyName) && value.length) {
                 group.proxies.push(proxyName);
             }
+            const proxyNameSelect = key + '_手动选择';
+            if (!proxiesSet.has(proxyNameSelect) && value.length) {
+                group.proxies.push(proxyNameSelect);
+            }
         });
     }
 
     // 生成所有的自动url-test策略组
     existProxyName.forEach((value, key) => {
         const proxyName = key;
+        const proxyNameSelect = key + '_手动选择';
         const proxies = value;
         proxies.forEach(proxy => {
             let insertSuccess = addToGroup(temp['proxy-groups'], proxy, proxyName);
@@ -482,6 +487,12 @@ async function mergeSubAndTemplate(temp, sub, lazy) {
             if (!insertSuccess) {
                 addNewGroup(temp['proxy-groups'], proxyName, true, lazy);
                 addToGroup(temp['proxy-groups'], proxy, proxyName);
+            }
+            let insertSuccessSelect = addToGroup(temp['proxy-groups'], proxy, proxyNameSelect);
+
+            if (!insertSuccessSelect) {
+                addNewGroup(temp['proxy-groups'], proxyNameSelect, false, lazy);
+                addToGroup(temp['proxy-groups'], proxy, proxyNameSelect);
             }
         });
     });
