@@ -78,6 +78,14 @@ proxy-groups:
       - DIRECT
       - REJECT
 rules:
+  - DOMAIN-KEYWORD,liangyuandian,🌐默认翻墙
+  - DOMAIN-KEYWORD,4gq62f52gdss,🌐默认翻墙
+  - DOMAIN-KEYWORD,wtq35pfyd55o,🌐默认翻墙
+  - DOMAIN-KEYWORD,5hqx9equq,🌐默认翻墙
+  - DOMAIN-KEYWORD,bywa-1,🌐默认翻墙
+  - DOMAIN-SUFFIX,user.by.ltd,🌐默认翻墙
+  - DOMAIN-SUFFIX,mojie.cyou,🌐默认翻墙
+  - DOMAIN-KEYWORD,night-furyx,🌐默认翻墙
   - DOMAIN-KEYWORD,phind,🌐排华服务
   - DOMAIN-KEYWORD,gemini,🌐排华服务
   - DOMAIN-KEYWORD,bard.google,🌐排华服务
@@ -85,6 +93,7 @@ rules:
   - DOMAIN-SUFFIX,meta.com,🌐排华服务
   - DOMAIN-SUFFIX,ai.com,🌐排华服务
   - DOMAIN-SUFFIX,anthropic.com,🌐排华服务
+  - DOMAIN-SUFFIX,linkedin.com,🌐排华服务
   - DOMAIN-SUFFIX,openaicom.imgix.net,🌐排华服务
   - DOMAIN-SUFFIX,openaicomproductionae4b.blob.core.windows.net,🌐排华服务
   - DOMAIN-SUFFIX,openaicom-api-bdcpf8c6d2e9atf6.z01.azurefd.net,🌐排华服务
@@ -103,7 +112,8 @@ rules:
   - DOMAIN-SUFFIX,openaiapi-site.azureedge.net,🌐排华服务
   - DOMAIN-SUFFIX,sentry.io,🌐排华服务
   - DOMAIN-SUFFIX,stripe.com,🌐排华服务
-  - DOMAIN-KEYWORD,cdn,🌐下载服务
+  - DOMAIN-SUFFIX,huggingface.co,🌐下载服务
+  - DOMAIN-SUFFIX,huggingface.com,🌐下载服务
   - DOMAIN-SUFFIX,npmjs.org,🌐下载服务
   - DOMAIN-SUFFIX,acl4.ssr,🌏全球直连
   - DOMAIN-SUFFIX,ip6-localhost,🌏全球直连
